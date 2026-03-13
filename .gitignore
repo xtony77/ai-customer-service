@@ -1,0 +1,34 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go build output
+/bin/
+/dist/
+
+# Test binary
+*.test
+
+# Go coverage
+*.out
+*.prof
+
+# Environment variables
+.env
+
+# Docker data
+.docker-data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
