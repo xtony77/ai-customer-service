@@ -1,7 +1,6 @@
 package database
 
 import (
-	"ai-customer-service/domain"
 	"ai-customer-service/internal/configs"
 	"fmt"
 	"sync"
@@ -13,14 +12,13 @@ import (
 )
 
 type PostgreSQLService struct {
-	Config *configs.Config
-	Conn   *gorm.DB
+	Conn *gorm.DB
 }
 
 var psqlDB *gorm.DB
 var psqlOnce sync.Once
 
-func NewPostgreSQL(config *configs.Config) domain.PostgreSQLInterface {
+func NewPostgreSQL(config *configs.Config) *gorm.DB {
 	psqlOnce.Do(func() {
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=%s",
 			config.PostgreSQL.Host,
@@ -38,18 +36,20 @@ func NewPostgreSQL(config *configs.Config) domain.PostgreSQLInterface {
 			panic(err)
 		}
 
-		psqlDB, err := db.DB()
+		sqlDB, err := db.DB()
 		if err != nil {
 			panic(err)
 		}
 
-		psqlDB.SetMaxOpenConns(25)
-		psqlDB.SetMaxIdleConns(5)
-		psqlDB.SetConnMaxLifetime(5 * time.Minute)
+		sqlDB.SetMaxOpenConns(25)
+		sqlDB.SetMaxIdleConns(5)
+		sqlDB.SetConnMaxLifetime(5 * time.Minute)
+		psqlDB = db
 	})
 
-	return &PostgreSQLService{
-		Config: config,
-		Conn:   psqlDB,
-	}
+	return psqlDB
+}
+
+func (p *PostgreSQLService) DB() *gorm.DB {
+	return p.Conn
 }

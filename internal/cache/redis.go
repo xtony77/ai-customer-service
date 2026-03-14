@@ -3,15 +3,18 @@ package cache
 import (
 	"ai-customer-service/domain"
 	"ai-customer-service/internal/configs"
+	"context"
 	"fmt"
 	"sync"
+	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/redis/go-redis/v9"
 )
 
 type RedisService struct {
-	Config *configs.Config
-	Conn   *redis.Client
+	Conn *redis.Client
 }
 
 var rdb *redis.Client
@@ -27,7 +30,25 @@ func NewRedis(config *configs.Config) domain.RedisInterface {
 	})
 
 	return &RedisService{
-		Config: config,
-		Conn:   rdb,
+		Conn: rdb,
 	}
+}
+
+func (r *RedisService) Get(key string) (string, error) {
+	value, err := r.Conn.Get(context.Background(), key).Result()
+	if err == redis.Nil {
+		return "", nil
+	}
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	return value, nil
+}
+
+func (r *RedisService) Set(key string, value string, expiration time.Duration) error {
+	if err := r.Conn.Set(context.Background(), key, value, expiration).Err(); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
 }

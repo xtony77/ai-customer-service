@@ -9,11 +9,11 @@ import (
 )
 
 type Config struct {
-	Env        string
 	Gin        *Gin
 	JWT        *JWT
 	PostgreSQL *PostgreSQL
 	Redis      *Redis
+	OpenAI     *OpenAI
 }
 
 type Gin struct {
@@ -40,6 +40,12 @@ type Redis struct {
 	Port     string
 	Password string
 	Database int
+}
+
+type OpenAI struct {
+	APIKey         string
+	Model          string
+	EmbeddingModel string
 }
 
 var config *Config
@@ -71,6 +77,11 @@ func NewConfig() *Config {
 				Port:     getEnv("REDIS_PORT", "6379"),
 				Password: getEnv("REDIS_PASSWORD", ""),
 				Database: getEnvInt("REDIS_DATABASE", 0),
+			},
+			OpenAI: &OpenAI{
+				APIKey:         getEnv("OPENAI_API_KEY", ""),
+				Model:          getEnv("OPENAI_MODEL", "gpt-4o-mini"),
+				EmbeddingModel: getEnv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
 			},
 		}
 	})

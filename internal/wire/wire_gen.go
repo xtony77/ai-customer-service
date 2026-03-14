@@ -12,6 +12,10 @@ import (
 	"ai-customer-service/internal/configs"
 	"ai-customer-service/internal/database"
 	"ai-customer-service/internal/jwt"
+	"ai-customer-service/internal/repositories/csai_repository"
+	"ai-customer-service/internal/services/csai_service"
+	"ai-customer-service/internal/services/openai_service"
+	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
@@ -22,16 +26,36 @@ func NewJWT() domain.JWTInterface {
 	return jwtInterface
 }
 
-func NewPostgreSQL() (domain.PostgreSQLInterface, error) {
+func NewPostgreSQL() *gorm.DB {
 	config := NewConfig()
-	postgreSQLInterface := database.NewPostgreSQL(config)
-	return postgreSQLInterface, nil
+	db := database.NewPostgreSQL(config)
+	return db
 }
 
-func NewRedis() (domain.RedisInterface, error) {
+func NewRedis() domain.RedisInterface {
 	config := NewConfig()
 	redisInterface := cache.NewRedis(config)
-	return redisInterface, nil
+	return redisInterface
+}
+
+func NewOpenAI() domain.OpenAIInterface {
+	config := NewConfig()
+	openAIInterface := openai_service.NewOpenAI(config)
+	return openAIInterface
+}
+
+func NewCSAIRepository() domain.CSAIRepositoryInterface {
+	db := NewPostgreSQL()
+	csaiRepositoryInterface := csai_repository.NewCSAIRepository(db)
+	return csaiRepositoryInterface
+}
+
+func NewCSAIService() domain.CSAIServiceInterface {
+	redisInterface := NewRedis()
+	openAIInterface := NewOpenAI()
+	csaiRepositoryInterface := NewCSAIRepository()
+	csaiServiceInterface := csai_service.NewCSAIService(redisInterface, openAIInterface, csaiRepositoryInterface)
+	return csaiServiceInterface
 }
 
 // wire.go:

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS qa_embeddings;
+DROP EXTENSION IF EXISTS vector;
